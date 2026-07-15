@@ -1,7 +1,6 @@
 import { generateText } from "ai";
-import { openrouter } from "@/features/AI"
-
-const REVIEW_MODEL = "openrouter/free"
+import { getReviewModel } from "@/features/AI";
+import type { SubscriptionPlan } from "@/features/dashboard/lib/types";
 
 const SYSTEM_PROMPT = `You are an expert code reviewer with deep knowledge of software engineering best practices, security, and performance optimization.
 
@@ -302,6 +301,8 @@ type ReviewInput = {
     contextSnippets: string[];
     /** Optional chunks from repo-sync namespace (full codebase context) */
     repoContextSnippets: string[];
+    plan: SubscriptionPlan;
+    proActive: boolean;
 };
 
 
@@ -324,7 +325,7 @@ export async function generateReview(input: ReviewInput) {
     const repoContextSection = buildRepoContextSection(input.repoContextSnippets);
 
     const { text } = await generateText({
-        model: openrouter(REVIEW_MODEL),
+        model: getReviewModel(input.plan, { proActive: input.proActive }),
         system: SYSTEM_PROMPT,
         prompt: `
 Repository: ${input.repoFullName}

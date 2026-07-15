@@ -306,6 +306,10 @@ export function chunkRepoFiles(files: RepoFile[]): CodeChunk[] {
       const part = start / MAX_CHUNK_LINES;
       const text = lines.slice(start, start + MAX_CHUNK_LINES).join("\n");
 
+      if (!text.trim()) {
+        continue;
+      }
+
       chunks.push({
         id: buildChunkId(file.filePath, part),
         filePath: file.filePath,
@@ -356,9 +360,10 @@ export async function deleteRepoNamespace(namespace: string) {
 
 export async function saveRepoChunks(namespace: string, chunks: CodeChunk[]) {
   const index = getPineconeIndex();
+  const searchable = chunks.filter((chunk) => chunk.text.trim());
 
-  for (let start = 0; start < chunks.length; start += UPSERT_BATCH_SIZE) {
-    const batch = chunks.slice(start, start + UPSERT_BATCH_SIZE);
+  for (let start = 0; start < searchable.length; start += UPSERT_BATCH_SIZE) {
+    const batch = searchable.slice(start, start + UPSERT_BATCH_SIZE);
 
     const records = batch.map((chunk) => ({
       id: chunk.id,
@@ -371,16 +376,50 @@ export async function saveRepoChunks(namespace: string, chunks: CodeChunk[]) {
 }
 
 
+/** `pending` never left the queue (e.g. Inngest was down) — fail quickly. */
+const STALE_PENDING_MS = 2 * 60 * 1000;
+/** `syncing` means the job started — allow longer for large repos. */
+const STALE_SYNCING_MS = 15 * 60 * 1000;
+
+function isStaleSync(status: string, updatedAt: Date, now: number) {
+  const age = now - updatedAt.getTime();
+
+  if (status === "pending") {
+    return age > STALE_PENDING_MS;
+  }
+
+  if (status === "syncing") {
+    return age > STALE_SYNCING_MS;
+  }
+
+  return false;
+}
+
 export async function getRepoSyncStatuses(repoFullNames: string[]) {
   const syncs = await prisma.repoSync.findMany({
     where: { repoFullName: { in: repoFullNames } },
-    select: { repoFullName: true, status: true },
+    select: { id: true, repoFullName: true, status: true, updatedAt: true },
   });
 
+  const now = Date.now();
+  const staleIds: string[] = [];
   const statusByRepo: Record<string, string> = {};
 
   for (const sync of syncs) {
+    if (isStaleSync(sync.status, sync.updatedAt, now)) {
+      staleIds.push(sync.id);
+      statusByRepo[sync.repoFullName] = "failed";
+      continue;
+    }
+
     statusByRepo[sync.repoFullName] = sync.status;
+  }
+
+  if (staleIds.length > 0) {
+    await prisma.repoSync.updateMany({
+      where: { id: { in: staleIds } },
+      data: { status: "failed" },
+    });
   }
 
   return statusByRepo;

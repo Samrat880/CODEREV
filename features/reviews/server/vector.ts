@@ -12,8 +12,13 @@ export async function saveChunksToPinecone(
     chunks: CodeChunk[]
 ) {
     const index = getPineconeIndex();
+    const searchable = chunks.filter((chunk) => chunk.text.trim());
 
-    const records = chunks.map((chunk) => ({
+    if (searchable.length === 0) {
+        return;
+    }
+
+    const records = searchable.map((chunk) => ({
         id: chunk.id,
         text: chunk.text,
         filePath: chunk.filePath,

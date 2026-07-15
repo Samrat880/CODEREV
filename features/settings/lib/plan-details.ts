@@ -8,6 +8,7 @@ export const PLAN_DETAILS: Record<
     label: "Free",
     features: [
       "Up to 5 AI reviews per month",
+      "Standard AI reviews (OpenRouter)",
       "Public and private repositories only",
       "Community support",
     ],
@@ -16,6 +17,7 @@ export const PLAN_DETAILS: Record<
     label: "Pro",
     features: [
       "Unlimited AI reviews on connected repos",
+      "Premium OpenAI reviews",
       "Public and private repository support",
       "Priority support",
     ],

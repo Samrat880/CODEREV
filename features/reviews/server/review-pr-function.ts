@@ -1,6 +1,8 @@
+import { getUserSubscription } from "@/features/billing/server/subscription";
+import { getUserIdByInstallationId } from "@/features/github/server/installation";
 import { inngest } from "@/features/inngest/client";
 import { prisma } from "@/lib/db";
-import { formatPrFilesForReview, getPullRequestFiles } from "./pr-files";
+import { getPullRequestFiles } from "./pr-files";
 import { generateReview } from "./generate-review";
 import { postPrComment } from "./post-pr-comment";
 import { chunkPrFiles } from "../utils/chunk-code";
@@ -70,6 +72,13 @@ export const reviewPullRequest = inngest.createFunction(
       });
   
       const review = await step.run("generate-ai-review", async () => {
+        const userId = await getUserIdByInstallationId(pullRequest.installationId);
+        const subscription = userId
+          ? await getUserSubscription(userId)
+          : { plan: "free" as const, status: "active" as const, renewsAt: null };
+        const proActive =
+          subscription.plan === "pro" && subscription.status === "active";
+
         // Search within this PR's namespace for chunks related to the PR title
         const contextSnippets = await searchPrContext(
           namespace,
@@ -81,6 +90,8 @@ export const reviewPullRequest = inngest.createFunction(
           title: pullRequest.title,
           contextSnippets,
           repoContextSnippets,
+          plan: subscription.plan,
+          proActive,
         });
       });
   
