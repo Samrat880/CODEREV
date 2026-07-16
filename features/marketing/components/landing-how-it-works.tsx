@@ -21,25 +21,25 @@ const STEPS = [
 
 export function LandingHowItWorks() {
   return (
-    <section className="border-t border-border/60 px-6 py-20 md:px-10 md:py-28">
+    <section className="border-t border-[oklch(0.18_0.02_260/0.12)] px-6 py-20 md:px-10 md:py-28">
       <div className="mx-auto max-w-5xl">
-        <h2 className="font-heading text-3xl font-semibold tracking-tight text-foreground">
+        <h2 className="font-heading text-3xl font-semibold tracking-tight text-[var(--landing-ink)]">
           How it works
         </h2>
-        <p className="mt-3 max-w-2xl text-muted-foreground">
+        <p className="mt-3 max-w-2xl text-[var(--landing-muted)]">
           Three steps from install to automated review comments on every pull
           request.
         </p>
         <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
           {STEPS.map((item) => (
             <li key={item.step} className="space-y-3">
-              <p className="font-mono text-xs tracking-widest text-muted-foreground">
+              <p className="font-mono text-xs tracking-widest text-[var(--landing-core)]">
                 {item.step}
               </p>
-              <h3 className="font-heading text-xl font-medium text-foreground">
+              <h3 className="font-heading text-xl font-medium text-[var(--landing-ink)]">
                 {item.title}
               </h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="text-sm leading-relaxed text-[var(--landing-muted)]">
                 {item.description}
               </p>
             </li>

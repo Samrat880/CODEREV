@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Button } from "@/components/ui/button";
+import { landingBtnCore } from "@/features/marketing/lib/styles";
 
 type LandingHeaderProps = {
   isSignedIn: boolean;
@@ -11,7 +12,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
     <header className="relative z-20 flex items-center justify-between px-6 py-5 md:px-10">
       <Link
         href="/"
-        className="font-heading text-lg font-semibold tracking-tight text-foreground"
+        className="font-heading text-lg font-semibold tracking-tight text-[var(--landing-ink)]"
       >
         CODEREV
       </Link>
@@ -20,6 +21,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
         {isSignedIn ? (
           <Button
             size="sm"
+            className={landingBtnCore}
             nativeButton={false}
             render={<Link href="/dashboard" />}
           >
@@ -28,6 +30,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
         ) : (
           <Button
             size="sm"
+            className={landingBtnCore}
             nativeButton={false}
             render={<Link href="/sign-in" />}
           >

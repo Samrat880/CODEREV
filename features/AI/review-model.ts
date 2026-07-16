@@ -2,7 +2,7 @@ import type { SubscriptionPlan } from "@/features/dashboard/lib/types";
 import { openai, openrouter } from "./providers";
 
 const OPENROUTER_REVIEW_MODEL = "openrouter/free";
-const OPENAI_REVIEW_MODEL = "gpt-4o-mini";
+const OPENAI_REVIEW_MODEL = "gpt-4o";
 
 type ReviewModelOptions = {
   proActive?: boolean;
